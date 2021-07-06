@@ -12,7 +12,7 @@ on:
 env:
   CI_REQ_DOTNET_SDK_VER: 5.0.100
 
-
+jobs:
   build:
     name: Build
     runs-on: windows-latest
