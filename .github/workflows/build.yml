@@ -30,7 +30,8 @@ jobs:
         shell: pwsh
         run: |
           dotnet publish -c Release
-          Compress-Archive -Path "Il2CppInspector.GUI\bin\Release\netcoreapp3.1\win-x64\publish" -DestinationPath C:\builtfiles\Il2CppInspector-net-win64.zip
+          New-Item -ItemType Directory -Path 'C:\' -Name 'builtfiles'
+          Compress-Archive -Path 'Il2CppInspector.GUI\bin\Release\netcoreapp3.1\win-x64\publish\' -DestinationPath 'C:\builtfiles\Il2CppInspector-net-win64.zip'
 
       - uses: actions/upload-artifact@v2
         if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
