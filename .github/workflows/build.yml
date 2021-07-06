@@ -1,0 +1,53 @@
+name: GitHub CI
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  release:
+    types: released
+
+env:
+  CI_REQ_DOTNET_SDK_VER: 5.0.100
+
+
+  build:
+    name: Build
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{env.CI_REQ_DOTNET_SDK_VER}}
+
+      - name: Build Il2CppInspector (.NET x64)
+        shell: pwsh
+        run: |
+          cd Il2CppInspector
+          dotnet publish -c Release
+          Compress-Archive -Path "Il2CppInspector\Il2CppInspector.GUI\bin\Release\netcoreapp3.1\win-x64\publish" -DestinationPath C:\builtfiles\Il2CppInspector-net-win64.zip
+
+      - uses: actions/upload-artifact@v2
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
+        with:
+          name: Il2CppInspector-net-win64
+          path: C:\builtfiles\Il2CppInspector-net-win64.zip
+          if-no-files-found: error
+
+      # Create a new release: create a tag, then 'git push origin <tagname>', wait for it to build
+      - name: Create a new GitHub release if a new tag is pushed
+        uses: softprops/action-gh-release@b28d815 #@v1
+        with:
+          files: |
+            C:\builtfiles\Il2CppInspector-net-win64.zip
+          body: |
+            If your antivirus software complains, it's a false positive and you should contact them. I can't fix their buggy software.
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
